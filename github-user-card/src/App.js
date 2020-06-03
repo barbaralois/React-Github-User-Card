@@ -10,6 +10,7 @@ export default class App extends React.Component {
     this.state = {
       user: {},
       input: '',
+      followers: [],
     };
   }
 
@@ -19,19 +20,21 @@ export default class App extends React.Component {
       .then((response) => {
         this.setState({
           user: {
-            image: response.data.avatar_url,
-            name: response.data.name,
-            username: response.data.login,
-            location: response.data.location,
-            githubLink: response.data.html_url,
-            followers: response.data.followers,
-            following: response.data.following,
-            bio: response.data.bio,
+            ...response.data,
           },
         });
       })
       .catch((error) => {
         console.log(error);
+      });
+
+    axios
+      .get(`https://api.github.com/users/barbaralois/followers`)
+      .then((response) => {
+        this.setState({
+          followers: [...response.data],
+          input: '',
+        });
       });
   }
 
@@ -45,18 +48,18 @@ export default class App extends React.Component {
     axios.get(`https://api.github.com/users/${username}`).then((response) => {
       this.setState({
         user: {
-          image: response.data.avatar_url,
-          name: response.data.name,
-          username: response.data.login,
-          location: response.data.location,
-          githubLink: response.data.html_url,
-          followers: response.data.followers,
-          following: response.data.following,
-          bio: response.data.bio,
+          ...response.data,
         },
-        input: '',
       });
     });
+    axios
+      .get(`https://api.github.com/users/${username}/followers`)
+      .then((response) => {
+        this.setState({
+          followers: [...response.data],
+          input: '',
+        });
+      });
   };
 
   render() {
@@ -70,7 +73,7 @@ export default class App extends React.Component {
           input={this.state.input}
           fetchUser={this.fetchUser}
         />
-        <User user={this.state.user} />
+        <User user={this.state.user} followers={this.state.followers} />
       </div>
     );
   }
